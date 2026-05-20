@@ -202,23 +202,20 @@
         }
 
         /* 点击烟花文字样式 */
-        .firework-text {
-            position: absolute;
-            font-weight: 900;
-            /* 字体加粗 */
-            font-size: 18px;
-            /* 稍微放大一点 */
-            pointer-events: none;
-            z-index: 10;
-            /* 添加文字描边和阴影，防止看不清 */
-            text-shadow:
-                0 0 10px currentColor,
-                0 0 20px currentColor,
-                0 0 30px currentColor;
-            -webkit-text-stroke: 1px rgba(255, 255, 255, 0.5);
-            /* 文字描边 */
-            animation: explodeFade 1.5s ease-out forwards;
-        }
+      .firework-text {
+  position: absolute;
+  font-weight: 700;
+  font-size: 18px;
+  pointer-events: none;
+  z-index: 10;
+  color: #fff; /* 固定为白色 */
+  /* 樱花粉色的光晕 */
+  text-shadow: 
+    0 0 10px #ff9a9e, 
+    0 0 20px #ff9a9e, 
+    0 0 30px #ff9a9e;
+  animation: explodeFade 1.5s ease-out forwards; 
+}
 
         @keyframes explodeFade {
             0% {
@@ -805,8 +802,8 @@
 
                     // 2. 强化彩虹色 (饱和度和亮度更高)
                     // 使用 HSL 直接设置，比 HEX 颜色过渡更自然
-                    const hue = (Date.now() / 10 + i * 30) % 360;
-                    span.style.color = `hsl(${hue}, 100%, 65%)`;
+                    //const hue = (Date.now() / 10 + i * 30) % 360;
+                    //span.style.color = `hsl(${hue}, 100%, 65%)`;
 
                     // 3. 设置初始位置
                     span.style.left = `${x}px`;
