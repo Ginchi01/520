@@ -15,6 +15,9 @@
             --bg-color: #050505;
             --heart-color-1: #ff7eb3;
             --heart-color-2: #ff758c;
+            --heart-pink-light: #ff9a9e;
+            --heart-pink-dark: #fecfef;
+            --heart-white: #ffffff;
             --text-primary: #ffffff;
             --text-secondary: #aabbcc;
             --glass-bg: rgba(20, 20, 20, 0.65);
@@ -122,11 +125,11 @@
         /* 轮转情话 */
         #rotating-text {
             font-size: 1.2rem;
-            color: var(--heart-color-1);
+            color: var(--heart-pink-light);
             margin-bottom: 10px;
             font-weight: bold;
             letter-spacing: 2px;
-            text-shadow: 0 0 10px var(--heart-color-1);
+            text-shadow: 0 0 10px rgba(255, 154, 158, 0.5);
             min-height: 1.5em;
         }
 
@@ -202,31 +205,28 @@
         }
 
         /* 点击烟花文字样式 */
-      .firework-text {
-  position: absolute;
-  font-weight: 700;
-  font-size: 18px;
-  pointer-events: none;
-  z-index: 10;
-  color: #fff; /* 固定为白色 */
-  /* 樱花粉色的光晕 */
-  text-shadow: 
-    0 0 10px #ff9a9e, 
-    0 0 20px #ff9a9e, 
-    0 0 30px #ff9a9e;
-  animation: explodeFade 1.5s ease-out forwards; 
-}
+        .firework-text {
+            position: absolute;
+            font-weight: 700;
+            font-size: 18px;
+            pointer-events: none;
+            z-index: 10;
+            color: var(--heart-white);
+            text-shadow: 
+                0 0 10px var(--heart-pink-light), 
+                0 0 20px var(--heart-pink-light), 
+                0 0 30px var(--heart-pink-light);
+            animation: explodeFade 1.5s ease-out forwards; 
+        }
 
         @keyframes explodeFade {
             0% {
                 transform: scale(0.3) translate(0, 0) rotate(0deg);
-                /* 起始小一点 */
                 opacity: 1;
             }
 
             50% {
                 opacity: 1;
-                /* 在中间阶段应用刚才计算的最终状态 */
             }
 
             100% {
@@ -338,16 +338,31 @@
                 };
             },
 
-            // HSL 转 RGB 用于彩虹色生成
-            hslToHex: function (h, s, l) {
-                l /= 100;
-                const a = s * Math.min(l, 1 - l) / 100;
-                const f = n => {
-                    const k = (n + h / 30) % 12;
-                    const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
-                    return Math.round(255 * color).toString(16).padStart(2, '0');
-                };
-                return `#${f(0)}${f(8)}${f(4)}`;
+            // 生成白粉色系
+            generatePinkWhiteColor: function (alpha) {
+                const pinkWhiteColors = [
+                    'rgba(255, 255, 255, ALPHA)',      // 纯白
+                    'rgba(255, 240, 245, ALPHA)',      // 淡粉
+                    'rgba(255, 228, 225, ALPHA)',      // 粉白
+                    'rgba(255, 182, 193, ALPHA)',      // 浅粉
+                    'rgba(255, 154, 158, ALPHA)',      // 樱花粉
+                    'rgba(255, 192, 203, ALPHA)',      // 粉红
+                    'rgba(255, 105, 180, ALPHA)',      // 热粉
+                    'rgba(254, 207, 239, ALPHA)',      // 浅紫粉
+                ];
+                const color = pinkWhiteColors[Utils.randomInt(0, pinkWhiteColors.length - 1)];
+                return color.replace('ALPHA', alpha || 1);
+            },
+
+            // 简化版颜色生成（白粉色）
+            getPinkColor: function (index, total) {
+                // 从白到粉的渐变
+                const t = index / total;
+                const white = 255;
+                const pink = 200 + Math.sin(t * Math.PI) * 55; // 粉色变化
+                
+                // 创建柔和的粉色
+                return `rgb(${white}, ${pink * 0.8}, ${pink})`;
             }
         };
 
@@ -372,7 +387,7 @@
                 "你的眼里有星辰大海",
                 "只要有你，哪里都是风景",
                 "心跳多久，爱你多久",
-                "你是我所有的少女情怀和心之所向"
+                "你是我的心之所向"
             ],
 
             // 环绕关心的话 (嘘寒问暖)
@@ -410,12 +425,7 @@
                 "好喜欢你",
                 "比心",
                 "520快乐"
-            ],
-
-            colors: {
-                rainbowStart: 0,
-                rainbowSpeed: 2
-            }
+            ]
         };
 
         /**
@@ -587,7 +597,10 @@
                         baseY: y * this.scale,
                         baseZ: z * this.scale,
                         size: Utils.randomFloat(1.5, 3.5),
-                        colorOffset: Utils.randomInt(0, 360)
+                        // 记录粒子的亮度因子
+                        brightness: Utils.randomFloat(0.7, 1.0),
+                        // 记录颜色索引
+                        colorIndex: i
                     });
                 }
             }
@@ -606,6 +619,21 @@
                 let z2 = z1 * cosX + y * sinX;
 
                 return { x: x1, y: y1, z: z2 };
+            }
+
+            getPinkColor(alpha = 1) {
+                // 白粉色系
+                const pinkColors = [
+                    `rgba(255, 255, 255, ${alpha})`,      // 纯白
+                    `rgba(255, 240, 245, ${alpha})`,      // 淡粉
+                    `rgba(255, 228, 225, ${alpha})`,      // 粉白
+                    `rgba(255, 182, 193, ${alpha})`,      // 浅粉
+                    `rgba(255, 154, 158, ${alpha})`,      // 樱花粉
+                    `rgba(255, 192, 203, ${alpha})`,      // 粉红
+                    `rgba(255, 105, 180, ${alpha})`,      // 热粉
+                    `rgba(254, 207, 239, ${alpha})`,      // 浅紫粉
+                ];
+                return pinkColors[Utils.randomInt(0, pinkColors.length - 1)];
             }
 
             animate() {
@@ -634,19 +662,16 @@
                     const size = p.size * scale;
                     const alpha = (rotated.z + 100) / 200; // 深度越深越暗
 
-                    // 彩虹色计算
-                    const hue = (Config.colors.rainbowStart + p.colorOffset + this.angleY * 50) % 360;
-                    const color = Utils.hslToHex(hue, 80, 60);
+                    // 白粉色计算
+                    const colorAlpha = Math.max(0.3, alpha * p.brightness);
+                    const color = this.getPinkColor(colorAlpha);
 
                     this.ctx.beginPath();
                     this.ctx.arc(x2d, y2d, size, 0, Math.PI * 2);
                     this.ctx.fillStyle = color;
-                    this.ctx.globalAlpha = Math.max(0.2, alpha);
+                    this.ctx.globalAlpha = 1;
                     this.ctx.fill();
                 });
-                this.ctx.globalAlpha = 1;
-
-                Config.colors.rainbowStart += Config.colors.rainbowSpeed;
 
                 requestAnimationFrame(() => this.animate());
             }
@@ -700,8 +725,8 @@
                 const text = Config.caringWords[Utils.randomInt(0, Config.caringWords.length - 1)];
                 word.innerText = text;
 
-                // 随机颜色 (柔和色系)
-                const colors = ['#ff9a9e', '#fecfef', '#fecfef', '#a18cd1', '#fbc2eb', '#8fd3f4', '#84fab0'];
+                // 白粉色系
+                const colors = ['#ff9a9e', '#fecfef', '#ffffff', '#ffc0cb', '#f8c8dc', '#ffb6c1', '#f5b6c1'];
                 word.style.color = colors[Utils.randomInt(0, colors.length - 1)];
 
                 // --- 核心算法：防重叠定位 ---
@@ -800,10 +825,10 @@
                     const text = Config.fireworkTexts[Utils.randomInt(0, Config.fireworkTexts.length - 1)];
                     span.innerText = text;
 
-                    // 2. 强化彩虹色 (饱和度和亮度更高)
-                    // 使用 HSL 直接设置，比 HEX 颜色过渡更自然
-                    //const hue = (Date.now() / 10 + i * 30) % 360;
-                    //span.style.color = `hsl(${hue}, 100%, 65%)`;
+                    // 2. 设置为白粉色
+                    const pinkColors = ['#ffffff', '#ff9a9e', '#fecfef', '#ffc0cb', '#f8c8dc'];
+                    const color = pinkColors[Utils.randomInt(0, pinkColors.length - 1)];
+                    span.style.color = color;
 
                     // 3. 设置初始位置
                     span.style.left = `${x}px`;
@@ -870,7 +895,7 @@
                 if (diff < 0) {
                     // 如果当前时间还没到2026年3月3日，显示倒计时
                     // 这里为了演示逻辑，如果还没到那一天，显示倒计时，到了之后显示正计时
-                    // 但用户需求是“纪念日历”，通常指在一起之后。
+                    // 但用户需求是"纪念日历"，通常指在一起之后。
                     // 假设当前时间已经过了2026年3月3日。
                     // 如果没到，我们显示距离在一起还有多久。
 
